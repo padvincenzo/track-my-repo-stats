@@ -12,7 +12,7 @@ insert into project (name, slug) values
 ```
 
 3. Edit ``repo-stats.php``:
-    3.1. Update database credentials with yours
+  3.1. Update database credentials with yours
 
 ```php
 // Database credentials
@@ -22,14 +22,14 @@ $password = "your-db-password";
 $database = "your-db-name";
 ```
 
-    3.2. Update github username
+  3.2. Update github username
 
 ```php
 // Github username
 $username = "mygithubusername";
 ```
-    
-    3.3. Choose a password
+
+  3.3. Choose a password
 
 ```php
 // Choose a password
