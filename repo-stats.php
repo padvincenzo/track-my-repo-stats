@@ -6,6 +6,13 @@ $user = "root";
 $password = "";
 $database = "my_vincenzopadula";
 
+// Github username
+$username = "padvincenzo";
+
+// Choose a password
+$password = "123prova";
+
+
 // Create connection
 $dbh = new mysqli($host, $user, $password);
 
@@ -14,21 +21,18 @@ if ($dbh->connect_error) {
   die("Connection failed: " . $dbh->connect_error);
 }
 
+// Check database
 if(! $dbh->select_db($database)) {
   die("Database not found");
 }
 
-// Github username
-$username = "padvincenzo";
-
-// Choose a password
-$password = "123prova";
 
 // Check the password
 $inputcode = isset($_GET["code"]) ? $_GET["code"] : "";
 if($password != $inputcode) {
   die("Password missing/wrong.");
 }
+
 
 // Check input
 $project = json_decode(file_get_contents("php://input"));
