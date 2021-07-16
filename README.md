@@ -11,9 +11,8 @@ insert into project (name, slug) values
 ("My repo name", "my-repo-short");
 ```
 
-3. Edit ``repo-stats.php``:
-
-  3.1. Update database credentials with yours
+3. Open ``repo-stats.php``
+4. Update database credentials with yours
 
 ```php
 // Database credentials
@@ -23,22 +22,22 @@ $password = "your-db-password";
 $database = "your-db-name";
 ```
 
-  3.2. Update github username
+5. Update github username
 
 ```php
 // Github username
 $username = "mygithubusername";
 ```
 
-  3.3. Choose a password
+6. Choose a password
 
 ```php
 // Choose a password
 $password = "123prova";
 ```
 
-4. Save edited ``repo-stats.php`` to your server
-5. Once a day open ``<your-server-ip>/repo-stats.php?code=<your-password>`` to keep your database updated
+7. Save edited ``repo-stats.php`` to your server
+8. Once a day open ``<your-server-ip>/repo-stats.php?code=<your-password>`` from the browser to keep your database updated
 
 ## Chek differences between two dates
 Open phpmyadmin and run these queries. Note that assets that not increased their download count will not be displayed.
