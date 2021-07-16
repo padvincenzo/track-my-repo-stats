@@ -1,5 +1,5 @@
 # Track my repo stats
-Keep track of my github repos release stats daily.
+Keep track of my github repos release stats daily (useful for assets only).
 
 Example (tracking [Silence SpeedUp](https://github.com/padvincenzo/silence-speedup)):
 
