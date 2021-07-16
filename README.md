@@ -12,6 +12,7 @@ insert into project (name, slug) values
 ```
 
 3. Edit ``repo-stats.php``:
+
   3.1. Update database credentials with yours
 
 ```php
