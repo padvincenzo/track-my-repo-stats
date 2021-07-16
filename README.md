@@ -1,6 +1,10 @@
 # Track my repo stats
 Keep track of my github repos release stats daily.
 
+Example (tracking [Silence SpeedUp](https://github.com/padvincenzo/silence-speedup)):
+
+![Screenshot](repo-stats-screenshot.png)
+
 ## Get started
 
 1. Create the database (copy/paste code from ``database.sql`` into phpmyadmin)
