@@ -53,7 +53,7 @@ HAVING MAX(d.dl_count) - MIN(d.dl_count) > 0
 ORDER BY a.tag, MAX(d.dl_count) - MIN(d.dl_count);
 ```
 
-- today and <NUMBER> days ago (replace ``<NUMBER>`` with the desired one)
+- today and ``<NUMBER>`` days ago (replace ``<NUMBER>`` with the desired one)
 
 ```sql
 SELECT a.tag, a.filename, MIN(d.log_date) "previously", MIN(d.dl_count) "were", MAX(d.log_date) "now", MAX(d.dl_count) "are"
