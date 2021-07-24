@@ -1,17 +1,24 @@
 <?php
 
-// Database credentials
+/****** Credentials ******/
+
+// Database
 $host = "localhost";
 $user = "root";
 $password = "";
-$database = "my_vincenzopadula";
+$database = "";
 
 // Github username
-$username = "padvincenzo";
+$username = "";
 
-// Choose a password
-$password = "123prova";
+// Choose a password (empty string = no password)
+$password = "";
 
+// Set your user-agent
+$useragent = "";
+
+
+/****** Code ******/
 
 // Create connection
 $dbh = new mysqli($host, $user, $password);
@@ -21,58 +28,75 @@ if ($dbh->connect_error) {
   die("Connection failed: " . $dbh->connect_error);
 }
 
-// Check database
 if(! $dbh->select_db($database)) {
   die("Database not found");
 }
 
-
 // Check the password
-$inputcode = isset($_GET["code"]) ? $_GET["code"] : "";
-if($password != $inputcode) {
+$code = isset($_GET["code"]) ? $_GET["code"] : "";
+if($password != $code) {
   die("Password missing/wrong.");
 }
 
 
-// Check input
-$project = json_decode(file_get_contents("php://input"));
-if($project && isset($_GET["update"]) && $_GET["update"] == "true") {
-  foreach ($project->releases as $tag => $assets) {
-    foreach ($assets as $asset => $downloadCount) {
-      // Check that the asset exists
-      $result = $dbh->query("select idasset from project_asset where idproject = '$project->idproject' and tag = '$tag' and filename = '$asset';");
-      $idasset = 0;
-      if($result->num_rows == 1) {
-        $idasset = ($result->fetch_assoc())["idasset"];
-      } else {
-        // The asset does not exists yet, add it
-        $result = $dbh->query("insert into project_asset (idproject, tag, filename) values ('$project->idproject', '$tag', '$asset');");
-        if($result) {
-          $idasset = $dbh->insert_id;
-        }
-      }
-      if($idasset != 0) {
-        // Update the download count for this asset
-        $result = $dbh->query("insert into project_downloads (idasset, dl_count) values ('$idasset', '$downloadCount');");
-      }
-    }
+  $result = $dbh->query("select * from project");
+  if(!$result) {
+    die("Error retrieving projects data");
   }
 
-  // Stats has been updated, nothing to do anymore
-  die();
-}
-
-
-// No input, get stored repo names
-$result = $dbh->query("select * from project");
-if(!$result) {
-  die("Error retrieving projects data");
-}
-
 $repos = $result->fetch_all(MYSQLI_ASSOC);
+
 for($i = 0; $i < count($repos); $i++) {
   $slug = $repos[$i]["slug"];
   $repos[$i]["url"] = "https://api.github.com/repos/$username/$slug/releases";
+
+  // cURL session that retrieve github stats in a json format
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $repos[$i]["url"]);
+  curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  $result = curl_exec($ch);
+  curl_close($ch);
+
+  // Decode the json string
+  $releases = json_decode($result);
+
+  // Analyze data
+  $repos[$i]["releases"] = [];
+  foreach ($releases as $j => $release) {
+
+    // Ignore releases that have no assets
+    if(count($release->assets) > 0) {
+      $tag = $release->tag_name;
+      $repos[$i]["releases"][$tag] = array();
+      foreach ($release->assets as $k => $asset) {
+        $repos[$i]["releases"][$tag][$asset->name] = $asset->download_count;
+
+        // Update the database only when "update" received
+        if(isset($_GET["update"]) && $_GET["update"] == "true") {
+          $idproject = $repos[$i]["idproject"];
+          $filename = $asset->name;
+          $downloadCount = $asset->download_count;
+
+          $result = $dbh->query("select idasset from project_asset where idproject = '$idproject' and tag = '$tag' and filename = '$filename';");
+          $idasset = 0;
+          if($result->num_rows == 1) {
+            $idasset = ($result->fetch_assoc())["idasset"];
+          } else {
+            // The asset does not exists yet, add it
+            $result = $dbh->query("insert into project_asset (idproject, tag, filename) values ('$idproject', '$tag', '$filename');");
+            if($result) {
+              $idasset = $dbh->insert_id;
+            }
+          }
+          if($idasset != 0) {
+            // Update the download count for this asset
+            $result = $dbh->query("insert into project_downloads (idasset, dl_count) values ('$idasset', '$downloadCount');");
+          }
+        }
+      }
+    }
+  }
 }
 
 ?>
@@ -87,38 +111,9 @@ for($i = 0; $i < count($repos); $i++) {
 
       window.onload = async () => {
         for(let i = 0; i < repos.length; i++) {
-          await getRepoStats(repos[i]).then(() => {
-            printRepoStats(repos[i]);
-          });
+          printRepoStats(repos[i]);
         }
       };
-
-      async function getRepoStats(repo) {
-        return retrieve(repo.url).then((json) => {
-          try {
-            repo.releases = {};
-            var releases = JSON.parse(json);
-
-            releases.forEach((release, i) => {
-              if(release.assets.length > 0) {
-                repo.releases[release.tag_name] = {};
-
-                release.assets.forEach((asset, j) => {
-                  repo.releases[release.tag_name][asset.name] = asset.download_count;
-                });
-              }
-            });
-
-            update(repo).catch((err) => console.log(err));
-          }
-          catch(err) {
-            document.write(err);
-          }
-        }).catch((err) => {
-          console.log(err);
-          document.write(err);
-        });
-      }
 
       function printRepoStats(repo) {
         let total = 0;
@@ -138,54 +133,6 @@ for($i = 0; $i < count($repos); $i++) {
         }
 
         document.write(`<tr><td colspan="3" style="text-align: right;"><b>Total: ${total}</b></td></tr></table>`);
-      }
-
-      function retrieve(url) {
-        return new Promise((_resolve, _reject) => {
-          var xhr = new XMLHttpRequest();
-
-          xhr.onreadystatechange = () => {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-              _resolve(xhr.responseText);
-            }
-
-            if(xhr.readyState == 4 && xhr.status > 299) {
-              _reject(`Server Error: ${xhr.statusText}; url: ${url}`);
-            }
-          };
-
-          xhr.onerror = () => {
-            _reject(`xmlHTTP Error: ${xhr.responseText}`);
-          };
-
-          xhr.open("GET", url);
-          xhr.send();
-        });
-      }
-
-      function update(data) {
-        return new Promise((_resolve, _reject) => {
-          var xhr = new XMLHttpRequest();
-          var json = JSON.stringify(data);
-
-          xhr.onreadystatechange = () => {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-              _resolve(xhr.responseText);
-            }
-
-            if(xhr.readyState == 4 && xhr.status > 299) {
-              _reject(`Server Error: ${xhr.statusText}`);
-            }
-          };
-
-          xhr.onerror = () => {
-            _reject(`xmlHTTP Error: ${xhr.responseText}`);
-          };
-
-          xhr.open("POST", "<?php echo $_SERVER[PHP_SELF] . "?code=" . $inputcode . "&update=true"; ?>", true);
-          xhr.setRequestHeader("Content-Type", "application/json");
-          xhr.send(json);
-        });
       }
     </script>
   </head>
