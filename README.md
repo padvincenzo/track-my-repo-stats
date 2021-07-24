@@ -36,12 +36,20 @@ $username = "mygithubusername";
 6. Choose a password
 
 ```php
-// Choose a password
+// Choose a password (empty string = no password)
 $password = "123prova";
 ```
 
-7. Save edited ``repo-stats.php`` to your server
-8. Once a day open ``<your-server-ip>/repo-stats.php?code=<your-password>`` from the browser to keep your database updated
+7. Set your user-agent. To get yours, run this php script from your browser:
+
+```php
+<?php
+echo $_SERVER['HTTP_USER_AGENT'];
+?>
+```
+
+8. Save edited ``repo-stats.php`` to your server
+9. Once a day open ``<your-server-ip>/repo-stats.php?code=<your-password>`` from the browser to keep your database updated
 
 ## Chek differences between two dates
 Open phpmyadmin and run these queries. Note that assets that not increased their download count will not be displayed.
