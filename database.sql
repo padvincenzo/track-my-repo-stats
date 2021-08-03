@@ -17,3 +17,4 @@ create table project_downloads (
   dl_count int not null,
   primary key (idasset, log_date)
 );
+
