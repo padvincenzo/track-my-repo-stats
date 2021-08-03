@@ -76,3 +76,32 @@ GROUP BY d.idasset
 HAVING MAX(d.dl_count) - MIN(d.dl_count) > 0
 ORDER BY a.tag, MAX(d.dl_count) - MIN(d.dl_count);
 ```
+
+## Last week report
+
+```sql
+SELECT a.filename AS 'asset',
+  d7.dl_count AS '7 day ago',
+  d6.dl_count AS '6 day ago',
+  d5.dl_count AS '5 day ago',
+  d4.dl_count AS '4 day ago',
+  d3.dl_count AS '3 day ago',
+  d2.dl_count AS '2 day ago',
+  d1.dl_count AS '1 day ago'
+FROM project_asset a,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 1 day))d1,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 2 day))d2,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 3 day))d3,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 4 day))d4,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 5 day))d5,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 6 day))d6,
+  (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 7 day))d7
+WHERE d1.idasset = a.idasset
+  AND d2.idasset = a.idasset
+  AND d3.idasset = a.idasset
+  AND d4.idasset = a.idasset
+  AND d5.idasset = a.idasset
+  AND d6.idasset = a.idasset
+  AND d7.idasset = a.idasset
+```
+
