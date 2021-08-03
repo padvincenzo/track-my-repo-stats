@@ -3,44 +3,23 @@ Keep track of my github repos release stats daily (useful for assets only).
 
 Example (tracking [Silence SpeedUp](https://github.com/padvincenzo/silence-speedup)):
 
-![Screenshot](repo-stats-screenshot.png)
+![Screenshot](screenshots/index.png)
 
 ## Get started
 
-1. Create the database (copy/paste code from ``database.sql`` into phpmyadmin)
-2. Insert your repo names (the ones you want to track)
+### Install and start tracking
+
+1. Create the database (copy/paste code from ``database.sql`` into phpmyadmin).
+2. Insert your repo names (the ones you want to track).
 
 ```sql
 insert into project (name, slug) values
 ("My repo name", "my-repo-short");
 ```
 
-3. Open ``repo-stats.php``
-4. Update database credentials with yours
-
-```php
-// Database credentials
-$host = "localhost";
-$user = "root";
-$password = "your-db-password";
-$database = "your-db-name";
-```
-
-5. Update github username
-
-```php
-// Github username
-$username = "mygithubusername";
-```
-
-6. Choose a password
-
-```php
-// Choose a password (empty string = no password)
-$password = "123prova";
-```
-
-7. Set your user-agent. To get yours, run this php script from your browser:
+3. Open ``config.php``
+4. Update database credentials, github username with yours. And choose a password.
+5. Set your user-agent. To get yours, run this php script from your browser:
 
 ```php
 <?php
@@ -48,13 +27,31 @@ echo $_SERVER['HTTP_USER_AGENT'];
 ?>
 ```
 
-8. Save edited ``repo-stats.php`` to your server
-9. Once a day open ``<your-server-ip>/repo-stats.php?code=<your-password>&update=true`` to keep your database updated
+6. Once a day open ``<your-server-url>/update.php?code=<your-password>&db=true`` to keep your database updated.
 
-## Chek differences between two dates
+### View your data
+After a week you'll be able to see your downloads count. Currently there are 3 graphs:
+
+* Assets downloads per day;
+* Project downloads per day;
+* Assets downloads per day but grouped by OS.
+
+Visit ``<your-server-url>/?code=<your-password>`` to see them.
+
+You can also see the current download counts by visiting ``<your-server-url>/update.php?code=<your-password>`` (note that there's not ``db=true``).
+
+![List](screenshots/update.png)
+
+---
+
+You can also download your stats in csv and json by visiting ``<your-server-url>/csv.php?code=<your-password>`` and ``<your-server-url>/json.php?code=<your-password>`` respectively.
+
+## Manual queries
 Open phpmyadmin and run these queries. Note that assets that not increased their download count will not be displayed.
 
-- today and first day of tracking
+### Chek differences between two dates
+
+* today and first day of tracking
 
 ```sql
 SELECT a.tag, a.filename, MIN(d.log_date) "previously", MIN(d.dl_count) "were", MAX(d.log_date) "now", MAX(d.dl_count) "are"
@@ -65,7 +62,7 @@ HAVING MAX(d.dl_count) - MIN(d.dl_count) > 0
 ORDER BY a.tag, MAX(d.dl_count) - MIN(d.dl_count);
 ```
 
-- today and ``<NUMBER>`` days ago (replace ``<NUMBER>`` with the desired one)
+* today and ``<NUMBER>`` days ago (replace ``<NUMBER>`` with the desired one)
 
 ```sql
 SELECT a.tag, a.filename, MIN(d.log_date) "previously", MIN(d.dl_count) "were", MAX(d.log_date) "now", MAX(d.dl_count) "are"
@@ -77,7 +74,7 @@ HAVING MAX(d.dl_count) - MIN(d.dl_count) > 0
 ORDER BY a.tag, MAX(d.dl_count) - MIN(d.dl_count);
 ```
 
-## Last week report
+### Last week report
 
 ```sql
 SELECT a.filename AS 'asset',
