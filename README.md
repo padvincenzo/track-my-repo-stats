@@ -81,12 +81,12 @@ ORDER BY a.tag, MAX(d.dl_count) - MIN(d.dl_count);
 
 ```sql
 SELECT a.filename AS 'asset',
-  d7.dl_count AS '7 day ago',
-  d6.dl_count AS '6 day ago',
-  d5.dl_count AS '5 day ago',
-  d4.dl_count AS '4 day ago',
-  d3.dl_count AS '3 day ago',
-  d2.dl_count AS '2 day ago',
+  d7.dl_count AS '7 days ago',
+  d6.dl_count AS '6 days ago',
+  d5.dl_count AS '5 days ago',
+  d4.dl_count AS '4 days ago',
+  d3.dl_count AS '3 days ago',
+  d2.dl_count AS '2 days ago',
   d1.dl_count AS '1 day ago'
 FROM project_asset a,
   (SELECT * FROM project_downloads WHERE log_date = DATE_SUB(CURDATE(), INTERVAL 1 day))d1,
